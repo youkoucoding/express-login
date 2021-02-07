@@ -15,7 +15,7 @@ const initializePassport = require('./passport-config');
 initializePassport(
   passport,
   email => users.find(user => user.email === email),
-  id => users.find(users => user.id === id)
+  id => users.find(user => user.id === id)
 );
 
 const users = [];
@@ -52,6 +52,7 @@ app.post('/login', checkNotAuthenticated, passport.authenticate('local', {
 app.get('/register', checkNotAuthenticated, (req, res) => {
   res.render('register.ejs');
 });
+
 app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
