@@ -1,0 +1,33 @@
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>express-login</title>
+    <link rel="stylesheet" href="../public/styles/style.css" />
+  </head>
+
+  <body
+    class="body-bg min-h-screen pt-12 md:pt-20 pb-6 px-2 md:px-10 font-mono"
+  >
+    <main class="bg-white max-w-lg mx-auto md:p-12 my-10 rounded-lg shadow-2xl">
+      <section>
+        <h3 class="font-bold text-2xl text-center">
+          <!-- <% if(messages.error){ %> <%= messages.error %> <% } %> -->
+          <%= hello {name}%>
+        </h3>
+        <form
+          action="/logout?_method=DELETE"
+          method="POST"
+          class="flex flex-col"
+        >
+          <button
+            class="bg-purple-600 hover:bg-purple-700 text-white text-lg font-bold py-4 rounded shadow-lg hover:shadow-xl transition duration-200"
+            type="submit"
+          >
+            Log Out
+          </button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
