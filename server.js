@@ -1,15 +1,38 @@
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
 
 const express = require('express');
-const ejs = require('ejs');
+const path = require('path');
+// const ejs = require('ejs');
 const app = express();
 const passport = require('passport');
+const mysql = require('mysql');
 const flash = require('express-flash');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const methodOverride = require('method-override');
+
+//publicDirectory
+const publicDirectory = path.join(__dirname, './public/styles');
+app.use(express.static(publicDirectory));
+
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config({ path: './.env' });
+}
+
+const db = mysql.createConnection({
+  host: process.env.DATABASE_HOST,
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE
+});
+
+db.connect((error) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log('mysql is connected...');
+  }
+});
+
 
 const initializePassport = require('./passport-config');
 initializePassport(
@@ -21,8 +44,10 @@ initializePassport(
 const users = [];
 
 app.set('view-engine', 'ejs');
+
 //middleware &parses incoming requests with urlencoded payloads and is based on body-parser.
 app.use(express.urlencoded({ extended: false }));
+
 app.use(flash());
 app.use(session({
   secret: process.env.SESSION_SECRET,
