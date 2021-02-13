@@ -1,7 +1,5 @@
-
 const express = require('express');
 const path = require('path');
-// const ejs = require('ejs');
 const app = express();
 const passport = require('passport');
 const mysql = require('mysql');
@@ -10,6 +8,7 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const methodOverride = require('method-override');
 
+app.set('view-engine', 'ejs');
 //publicDirectory
 const publicDirectory = path.join(__dirname, './public/styles');
 app.use(express.static(publicDirectory));
@@ -18,6 +17,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config({ path: './.env' });
 }
 
+//database
 const db = mysql.createConnection({
   host: process.env.DATABASE_HOST,
   user: process.env.DATABASE_USER,
@@ -33,7 +33,7 @@ db.connect((error) => {
   }
 });
 
-
+// authentication middleware
 const initializePassport = require('./passport-config');
 initializePassport(
   passport,
@@ -43,9 +43,8 @@ initializePassport(
 
 const users = [];
 
-app.set('view-engine', 'ejs');
-
-//middleware &parses incoming requests with urlencoded payloads and is based on body-parser.
+//middleware &parses incoming requests with urlencoded payloads and is based on body-parser.（as sent by HTML forms）
+//This middleware is available in Express v4.16.0 onwards.  (bodyParser are old version)
 app.use(express.urlencoded({ extended: false }));
 
 app.use(flash());
@@ -81,11 +80,29 @@ app.get('/register', checkNotAuthenticated, (req, res) => {
 app.post('/register', checkNotAuthenticated, async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedPasswordConfirm = await bcrypt.hash(req.body.passport, 10);
     users.push({
       id: Date.now().toString(),
       name: req.body.name,
       email: req.body.email,
       password: hashedPassword,
+      passwordConfirm: hashedPasswordConfirm
+    });
+    // databases email check
+    db.query('SELECT email from users WHERE email = ?', (error, results) => {
+      if (error) {
+        console.log(error);
+      }
+      if (results.length > 0) {
+        return res.render('register', {
+          message: "This email is already in use"
+        });
+      } else if (hashedPassword !== hashedPasswordConfirm) {
+        return res.render('register', {
+          message: 'Password do not match'
+        });
+
+      }
     });
     res.redirect('/login');
   } catch (error) {
